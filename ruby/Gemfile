@@ -1,0 +1,14 @@
+source "https://rubygems.org"
+
+ruby '2.7.1'
+
+git_source(:github) {|repo_name| "https://github.com/#{repo_name}" }
+
+gem 'bundler'
+gem 'dotenv'
+gem 'jaeger-client'
+gem 'grpc'
+gem 'grpc-tools'
+gem 'opentracing'
+gem 'pry'
+gem 'rake'

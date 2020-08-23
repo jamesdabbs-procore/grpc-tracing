@@ -1,0 +1,17 @@
+syntax = "proto3";
+package example;
+
+option go_package=".;example";
+
+service Example {
+  rpc Single(Request) returns (Response) {}
+  rpc Batch(stream Request) returns (stream Response) {}
+}
+
+message Request {
+  string message = 1;
+}
+
+message Response {
+  string message = 1;
+}

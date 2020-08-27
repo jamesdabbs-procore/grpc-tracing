@@ -27,7 +27,10 @@ OpenTracing.global_tracer = Jaeger::Client.build(
       Jaeger::Reporters::LoggingReporter.new,
       remote
     ]
-  )
+  ),
+  extractors: {
+    OpenTracing::FORMAT_TEXT_MAP => [Jaeger::Extractors::B3TextMapCodec, Jaeger::Extractors::JaegerTextMapCodec]
+  }
 )
 
 class Server < Example::Example::Service

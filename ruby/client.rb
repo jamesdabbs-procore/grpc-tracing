@@ -27,7 +27,10 @@ tracer = OpenTracing.global_tracer = Jaeger::Client.build(
       # Jaeger::Reporters::LoggingReporter.new,
       remote
     ]
-  )
+  ),
+  injectors: {
+    OpenTracing::FORMAT_TEXT_MAP => [Jaeger::Injectors::B3RackCodec, Jaeger::Injectors::JaegerTextMapCodec]
+  }
 )
 
 stub = Example::Example::Stub.new('client-proxy:8000', :this_channel_is_insecure)
@@ -38,7 +41,7 @@ end
 
 iterations.times do
   puts '=> singles'
-  metadata = { 'x-client-trace-id' => SecureRandom.uuid }
+  metadata = {}
   tracer.start_active_span('singles') do
     requests.each do |request|
       tracer.start_active_span('single') do
@@ -49,7 +52,7 @@ iterations.times do
   end
 
   puts '=> batch'
-  metadata = { 'x-client-trace-id' => SecureRandom.uuid }
+  metadata = {}
   tracer.start_active_span('batch', tags: metadata) do
     tracer.inject(tracer.active_span.context, ::OpenTracing::FORMAT_TEXT_MAP, metadata)
     stub.batch(requests, metadata: metadata) do |response|

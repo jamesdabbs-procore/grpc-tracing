@@ -9,6 +9,8 @@ $LOAD_PATH.unshift(__dir__)
 require 'example_services_pb'
 $LOAD_PATH.shift
 
+iterations = Integer(ARGV.shift || '3')
+
 service_name = 'example/client/ruby'
 
 remote = Jaeger::Reporters::RemoteReporter.new(
@@ -28,18 +30,18 @@ tracer = OpenTracing.global_tracer = Jaeger::Client.build(
   )
 )
 
-stub = Example::Example::Stub.new('server-proxy:8000', :this_channel_is_insecure)
+stub = Example::Example::Stub.new('client-proxy:8000', :this_channel_is_insecure)
 
 requests = %w[first second third].map do |word|
   Example::Request.new(message: word)
 end
 
-4.times do
+iterations.times do
   puts '=> singles'
-  tracer.start_active_span('singles', tags: { 'request_id' => SecureRandom.uuid }) do
+  metadata = { 'x-client-trace-id' => SecureRandom.uuid }
+  tracer.start_active_span('singles') do
     requests.each do |request|
       tracer.start_active_span('single') do
-        metadata = {}
         tracer.inject(tracer.active_span.context, ::OpenTracing::FORMAT_TEXT_MAP, metadata)
         puts stub.single(request, metadata: metadata).message
       end
@@ -47,8 +49,8 @@ end
   end
 
   puts '=> batch'
-  tracer.start_active_span('batch', tags: { 'request_id' => SecureRandom.uuid }) do
-    metadata = {}
+  metadata = { 'x-client-trace-id' => SecureRandom.uuid }
+  tracer.start_active_span('batch', tags: metadata) do
     tracer.inject(tracer.active_span.context, ::OpenTracing::FORMAT_TEXT_MAP, metadata)
     stub.batch(requests, metadata: metadata) do |response|
       puts response.message

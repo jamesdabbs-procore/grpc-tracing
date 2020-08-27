@@ -5,29 +5,36 @@ services:
       context: go
       dockerfile: Dockerfile
     expose:
-      - "5555"
+      - 5555
     volumes:
-      - "./go:/code"
+      - ./go:/code
 
   ruby-server:
     build:
       context: ruby
       dockerfile: Dockerfile
     expose:
-    - "5555"
+    - 5555
     volumes:
-    - "./ruby:/code"
+    - ./ruby:/code
 
   server-proxy:
-    image: "envoyproxy/envoy:v1.14.4"
+    image: envoyproxy/envoy:v1.14.4
     volumes:
-    - "./envoy:/etc/envoy"
-    command: "envoy -c /etc/envoy/server.yaml"
-    links:
-    - "ruby-server"
+    - ./envoy:/etc/envoy
+    command: envoy -c /etc/envoy/server.yaml --service-cluster server-proxy
     ports:
-    - "8000:8000"
-    - "8081:8081"
+    - 8001:8081
+
+  client-proxy:
+    image: envoyproxy/envoy:v1.14.4
+    volumes:
+    - ./envoy:/etc/envoy
+    command: envoy -c /etc/envoy/client.yaml --service-cluster client-proxy
+    expose:
+    - 8000
+    ports:
+    - 7001:8081
 
   ruby-client:
     build:
@@ -35,11 +42,14 @@ services:
       dockerfile: Dockerfile
     entrypoint: /code/client.rb
     volumes:
-    - "./ruby:/code"
+    - ./ruby:/code
 
   jaeger:
     image: jaegertracing/all-in-one
+    environment:
+    - COLLECTOR_ZIPKIN_HTTP_PORT=9411
     expose:
-    - "14268"
+    - 9411
+    - 14268
     ports:
-    - "16686:16686"
+    - 16686:16686

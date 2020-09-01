@@ -46,6 +46,7 @@ iterations.times do
     requests.each do |request|
       tracer.start_active_span('single') do
         tracer.inject(tracer.active_span.context, ::OpenTracing::FORMAT_TEXT_MAP, metadata)
+        puts metadata.inspect
         puts stub.single(request, metadata: metadata).message
       end
     end
@@ -55,6 +56,7 @@ iterations.times do
   metadata = {}
   tracer.start_active_span('batch', tags: metadata) do
     tracer.inject(tracer.active_span.context, ::OpenTracing::FORMAT_TEXT_MAP, metadata)
+    puts metadata.inspect
     stub.batch(requests, metadata: metadata) do |response|
       puts response.message
     end

@@ -11,9 +11,12 @@ import (
 
 	opentracing "github.com/opentracing/opentracing-go"
 	"github.com/opentracing/opentracing-go/ext"
+	otLog "github.com/opentracing/opentracing-go/log"
 	pb "github.com/procore/example/example"
 	jaegercfg "github.com/uber/jaeger-client-go/config"
 	jaegerlog "github.com/uber/jaeger-client-go/log"
+	"github.com/uber/jaeger-client-go/zipkin"
+	"github.com/uber/jaeger-lib/metrics"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
 )
@@ -26,6 +29,8 @@ func (c *server) Single(ctx context.Context, req *pb.Request) (*pb.Response, err
 	if !ok {
 		return nil, errors.New("Failed to parse metadata")
 	}
+
+	log.Printf("Single Metadata: %+v", meta)
 
 	spanCtx, err := opentracing.GlobalTracer().Extract(
 		opentracing.HTTPHeaders,
@@ -49,6 +54,8 @@ func (c *server) Batch(srv pb.Example_BatchServer) error {
 		return errors.New("Failed to parse metadata")
 	}
 
+	log.Printf("Batch Metadata: %+v", meta)
+
 	spanCtx, err := opentracing.GlobalTracer().Extract(
 		opentracing.HTTPHeaders,
 		opentracing.HTTPHeadersCarrier(meta),
@@ -57,7 +64,7 @@ func (c *server) Batch(srv pb.Example_BatchServer) error {
 		return err
 	}
 
-	span, ctx := opentracing.StartSpanFromContext(ctx, "Batch", ext.RPCServerOption(spanCtx))
+	span, newCtx := opentracing.StartSpanFromContext(ctx, "Batch", ext.RPCServerOption(spanCtx))
 	defer span.Finish()
 
 	for {
@@ -76,7 +83,7 @@ func (c *server) Batch(srv pb.Example_BatchServer) error {
 			continue
 		}
 
-		res := handle(ctx, req)
+		res := handle(newCtx, req)
 		if err := srv.Send(res); err != nil {
 			log.Printf("send error %v", err)
 		}
@@ -88,6 +95,10 @@ func handle(ctx context.Context, req *pb.Request) *pb.Response {
 	defer span.Finish()
 
 	time.Sleep(10 * time.Millisecond)
+	span.LogFields(
+		otLog.Int("waited.ms", 10),
+		otLog.Int("msg.length", len(req.Message)),
+	)
 
 	runes := []rune(req.Message)
 	for i, j := 0, len(runes)-1; i < j; i, j = i+1, j-1 {
@@ -111,18 +122,26 @@ func main() {
 		},
 		Reporter: &jaegercfg.ReporterConfig{
 			CollectorEndpoint: "http://jaeger:14268/api/traces",
-			LogSpans:          false,
+			LogSpans:          true,
 		},
 	}
 
+	jLogger := jaegerlog.StdLogger
+	jMetricsFactory := metrics.NullFactory
+	zipkinPropagator := zipkin.NewZipkinB3HTTPHeaderPropagator()
+
 	closer, err := cfg.InitGlobalTracer(
 		"example/server/go",
-		jaegercfg.Logger(jaegerlog.StdLogger),
+		jaegercfg.Logger(jLogger),
+		jaegercfg.Metrics(jMetricsFactory),
+		jaegercfg.Injector(opentracing.HTTPHeaders, zipkinPropagator),
+		jaegercfg.Extractor(opentracing.HTTPHeaders, zipkinPropagator),
+		jaegercfg.ZipkinSharedRPCSpan(true),
 	)
-	defer closer.Close()
 	if err != nil {
 		log.Fatalf("failed to start tracing: %v", err)
 	}
+	defer closer.Close()
 
 	lis, err := net.Listen("tcp", port)
 	if err != nil {

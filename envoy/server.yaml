@@ -41,8 +41,7 @@ static_resources:
                         provider1:
                           issuer: issuer1
                           audiences:
-                            - audience1
-                            - audience2
+                            - app_oauth_audience_from_okta
                           remote_jwks:
                             http_uri:
                               uri: https://dev-283652.okta.com/oauth2/v1/keys
@@ -99,6 +98,19 @@ static_resources:
                     socket_address:
                       address: jaeger
                       port_value: 9411
+    - name: oauth2-proxy
+      connect_timeout: 1s
+      type: strict_dns
+      lb_policy: round_robin
+      load_assignment:
+        cluster_name: oauth2-proxy
+        endpoints:
+          - lb_endpoints:
+              - endpoint:
+                  address:
+                    socket_address:
+                      address: oauth2-proxy
+                      port_value: 4180
 
 admin:
   access_log_path: /tmp/admin_access.log

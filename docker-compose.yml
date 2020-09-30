@@ -54,12 +54,29 @@ services:
     ports:
       - 16686:16686
 
-    oauth2-proxy:
-      image: quay.io/oauth2-proxy/oauth2-proxy:v6.1.1
-      environment:
-        - OAUTH2_PROXY_CLIENT_ID=foo
-        - OAUTH2_PROXY_CLIENT_SECRET=baz
-        - OAUTH2_PROXY_COOKIE_SECRET=bar
-      ports:
-        - 4180
-      command: ["/bin/oauth2-proxy", "--provider=oidc", "--oidc-issuer-url=https://dev-283652.okta.com/oauth2/default","--redirect-url=http://lvh.me/oauth2/callback", "--cookie-expire=4h", "--cookie-name=_oauth2_proxy_istio_ingressgateway", "--cookie-refresh=1h", "--cookie-samesite=lax", "--cookie-secure=false", "--email-domain=*", "--http-address=http://0.0.0.0:4180", "--upstream=static://200", "--skip-provider-button=true", "--whitelist-domain=lvh.me", "--set-authorization-header=true"]
+  oauth2-proxy:
+    image: quay.io/oauth2-proxy/oauth2-proxy:v6.1.1
+    environment:
+      - OAUTH2_PROXY_CLIENT_ID=foo
+      - OAUTH2_PROXY_CLIENT_SECRET=baz
+      - OAUTH2_PROXY_COOKIE_SECRET=bar
+    ports:
+      - 4180
+    command:
+      [
+        "/bin/oauth2-proxy",
+        "--provider=oidc",
+        "--oidc-issuer-url=https://dev-283652.okta.com/oauth2/default",
+        "--redirect-url=http://lvh.me/oauth2/callback",
+        "--cookie-expire=4h",
+        "--cookie-name=_oauth2_proxy_istio_ingressgateway",
+        "--cookie-refresh=1h",
+        "--cookie-samesite=lax",
+        "--cookie-secure=false",
+        "--email-domain=*",
+        "--http-address=http://0.0.0.0:4180",
+        "--upstream=static://200",
+        "--skip-provider-button=true",
+        "--whitelist-domain=lvh.me",
+        "--set-authorization-header=true",
+      ]

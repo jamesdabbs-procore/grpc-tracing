@@ -69,8 +69,8 @@ services:
       [
         "/bin/oauth2-proxy",
         "--provider=oidc",
-        "--oidc-issuer-url=https://dev-283652.okta.com/oauth2/default",
-        "--redirect-url=http://lvh.me/oauth2/callback",
+        "--oidc-issuer-url=https://dev-725951.okta.com/oauth2/default",
+        "--redirect-url=http://localhost:8000/oauth2/callback",
         "--cookie-expire=4h",
         "--cookie-name=_oauth2_proxy_istio_ingressgateway",
         "--cookie-refresh=1h",

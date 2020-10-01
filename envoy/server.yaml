@@ -39,12 +39,10 @@ static_resources:
                     config:
                       providers:
                         provider1:
-                          issuer: issuer1
-                          audiences:
-                            - app_oauth_audience_from_okta
+                          issuer: https://dev-725951.okta.com
                           remote_jwks:
                             http_uri:
-                              uri: https://dev-283652.okta.com/oauth2/v1/keys
+                              uri: https://dev-725951.okta.com/oauth2/v1/keys
                               cluster: okta_jwks_cluster
                       rules:
                         # Not jwt verification is required for /health path

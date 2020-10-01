@@ -10,6 +10,11 @@ static_resources:
             - name: envoy.filters.network.http_connection_manager
               typed_config:
                 "@type": type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager
+                access_log:
+                  - name: envoy.access_loggers.file
+                    typed_config:
+                      "@type": type.googleapis.com/envoy.config.accesslog.v2.FileAccessLog
+                      path: "/etc/envoy/logs.txt"
                 stat_prefix: ingress_http
                 codec_type: auto
                 tracing:
@@ -51,33 +56,33 @@ static_resources:
                           allowedUpstreamHeaders:
                             patterns:
                               - exact: authorization
-                  - name: envoy.filters.http.jwt_authn
-                    typed_config:
-                      "@type": type.googleapis.com/envoy.config.filter.http.jwt_authn.v2alpha.JwtAuthentication
-                      providers:
-                        provider1:
-                          issuer: https://dev-725951.okta.com
-                          remote_jwks:
-                            http_uri:
-                              uri: https://dev-725951.okta.com/oauth2/v1/keys
-                              cluster: okta_jwks_cluster
-                              timeout: 5s
-                      rules:
-                        # Not jwt verification is required for /health path
-                        - match:
-                            prefix: /health
+                  # - name: envoy.filters.http.jwt_authn
+                  #   typed_config:
+                  #     "@type": type.googleapis.com/envoy.config.filter.http.jwt_authn.v2alpha.JwtAuthentication
+                  #     providers:
+                  #       provider1:
+                  #         issuer: https://dev-725951.okta.com
+                  #         remote_jwks:
+                  #           http_uri:
+                  #             uri: https://dev-725951.okta.com/oauth2/v1/keys
+                  #             cluster: okta_jwks_cluster
+                  #             timeout: 5s
+                      # rules:
+                      #   # Not jwt verification is required for /health path
+                      #   - match:
+                      #       prefix: /health
 
-                        # Jwt verification for provider1 is required for path prefixed with "prefix"
-                        - match:
-                            prefix: /prefix
-                          requires:
-                            provider_name: provider1
+                      #   # Jwt verification for provider1 is required for path prefixed with "prefix"
+                      #   - match:
+                      #       prefix: /prefix
+                      #     requires:
+                      #       provider_name: provider1
 
-                        # Jwt verification for either provider1 or provider2 is required for all other requests.
-                        - match:
-                            prefix: /
-                          requires:
-                            provider_name: provider1
+                      #   # Jwt verification for either provider1 or provider2 is required for all other requests.
+                      #   - match:
+                      #       prefix: /
+                      #     requires:
+                      #       provider_name: provider1
                   - name: envoy.filters.http.router
   clusters:
     - name: service

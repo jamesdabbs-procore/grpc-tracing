@@ -26,6 +26,8 @@ services:
     ports:
       - 8000:8000
       - 8001:8081
+    depends_on:
+      - oauth2-proxy
 
   # client-proxy:
   #   image: envoyproxy/envoy:v1.14.4

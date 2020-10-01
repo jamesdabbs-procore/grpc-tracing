@@ -35,8 +35,25 @@ static_resources:
                           route:
                             cluster: service
                 http_filters:
+                  - name: envoy.filters.http.ext_authz
+                    typed_config:
+                      "@type": type.googleapis.com/envoy.config.filter.http.ext_authz.v2.ExtAuthz
+                      http_service:
+                        server_uri:
+                          uri: http://oauth2-proxy:4180
+                          cluster: oauth2-proxy
+                          timeout: 10s
+                        authorizationRequest:
+                          allowedHeaders:
+                            patterns:
+                              - exact: cookie
+                        authorizationResponse:
+                          allowedUpstreamHeaders:
+                            patterns:
+                              - exact: authorization
                   - name: envoy.filters.http.jwt_authn
-                    config:
+                    typed_config:
+                      "@type": type.googleapis.com/envoy.config.filter.http.jwt_authn.v2alpha.JwtAuthentication
                       providers:
                         provider1:
                           issuer: https://dev-725951.okta.com
@@ -44,6 +61,7 @@ static_resources:
                             http_uri:
                               uri: https://dev-725951.okta.com/oauth2/v1/keys
                               cluster: okta_jwks_cluster
+                              timeout: 5s
                       rules:
                         # Not jwt verification is required for /health path
                         - match:
@@ -59,9 +77,7 @@ static_resources:
                         - match:
                             prefix: /
                           requires:
-                            requires_any:
-                              requirements:
-                                - provider_name: provider1
+                            provider_name: provider1
                   - name: envoy.filters.http.router
   clusters:
     - name: service
@@ -117,11 +133,11 @@ admin:
       address: 0.0.0.0
       port_value: 8081
 
-tracing:
-  http:
-    name: envoy.zipkin
-    config:
-      collector_cluster: jaeger
-      collector_endpoint: /api/v2/spans
-      collector_endpoint_version: http_json
-      shared_span_context: false
+# tracing:
+#   http:
+#     name: envoy.zipkin
+#     config:
+#       collector_cluster: jaeger
+#       collector_endpoint: /api/v2/spans
+#       collector_endpoint_version: http_json
+#       shared_span_context: false

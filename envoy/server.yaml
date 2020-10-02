@@ -61,22 +61,16 @@ static_resources:
                       "@type": type.googleapis.com/envoy.config.filter.http.jwt_authn.v2alpha.JwtAuthentication
                       providers:
                         provider1:
-                          issuer: https://dev-725951.okta.com/oauth2/default
+                          issuer: https://dev-481576.okta.com/oauth2/default
                           remote_jwks:
                             http_uri:
-                              uri: http://dev-725951.okta.com/oauth2/v1/keys
+                              uri: https://dev-481576.okta.com/oauth2/v1/keys
                               cluster: okta_jwks_cluster
                               timeout: 5s
                       rules:
-                        # Not jwt verification is required for /health path
+                        # No jwt verification is required for /health path
                         - match:
                             prefix: /health
-
-                        # Jwt verification for provider1 is required for path prefixed with "prefix"
-                        - match:
-                            prefix: /prefix
-                          requires:
-                            provider_name: provider1
 
                         # Jwt verification for either provider1 or provider2 is required for all other requests.
                         - match:
@@ -121,6 +115,15 @@ static_resources:
       connect_timeout: 1s
       type: strict_dns
       lb_policy: round_robin
+      transport_socket:
+        name: envoy.transport_sockets.tls
+        typed_config:
+          "@type": type.googleapis.com/envoy.api.v2.auth.UpstreamTlsContext
+          common_tls_context:
+            validation_context:
+              trusted_ca:
+                filename: /etc/ssl/certs/ca-certificates.crt
+          sni: dev-481576.okta.com
       load_assignment:
         cluster_name: okta_jwks_cluster
         endpoints:
@@ -128,8 +131,8 @@ static_resources:
               - endpoint:
                   address:
                     socket_address:
-                      address: dev-725951.okta.com/oauth2/v1/keys
-                      port_value: 80
+                      address: dev-481576.okta.com
+                      port_value: 443
 
     - name: oauth2-proxy
       connect_timeout: 1s

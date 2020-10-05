@@ -70,6 +70,8 @@ services:
         "/bin/oauth2-proxy",
         "--provider=oidc",
         "--oidc-issuer-url=https://dev-481576.okta.com/oauth2/default",
+        "--oidc-jwks-url=https://dev-481576.okta.com/oauth2/v1/keys",
+        "--pass-authorization-header=true",
         "--redirect-url=http://localhost:8000/oauth2/callback",
         "--cookie-expire=4h",
         "--cookie-name=_oauth2_proxy_istio_ingressgateway",
@@ -81,5 +83,6 @@ services:
         "--upstream=static://200",
         "--skip-provider-button=true",
         "--whitelist-domain=lvh.me",
-        "--set-authorization-header=true",
+        # "--set-authorization-header=true",
+        "--auth-logging=true",
       ]

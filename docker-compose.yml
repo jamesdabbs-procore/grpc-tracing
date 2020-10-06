@@ -70,13 +70,12 @@ services:
       - OAUTH2_PROXY_COOKIE_SECRET=deadbeefdeadbeef
     ports:
       - 4180
-    command:
-      [
+    command: [
         "/bin/oauth2-proxy",
         "--provider=oidc",
-        "--oidc-issuer-url=https://dev-481576.okta.com/oauth2/default",
-        "--oidc-jwks-url=https://dev-481576.okta.com/oauth2/v1/keys",
-        "--pass-authorization-header=true",
+        "--oidc-issuer-url=https://dev-601279.okta.com/oauth2/default",
+        "--oidc-jwks-url=https://dev-601279.okta.com/oauth2/default/v1/keys",
+        #"--pass-authorization-header=true",
         "--redirect-url=http://localhost:8000/oauth2/callback",
         "--cookie-expire=4h",
         "--cookie-name=_oauth2_proxy_istio_ingressgateway",

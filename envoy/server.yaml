@@ -61,10 +61,10 @@ static_resources:
                       "@type": type.googleapis.com/envoy.config.filter.http.jwt_authn.v2alpha.JwtAuthentication
                       providers:
                         provider1:
-                          issuer: https://dev-481576.okta.com/oauth2/default
+                          issuer: https://dev-601279.okta.com/oauth2/default
                           remote_jwks:
                             http_uri:
-                              uri: https://dev-481576.okta.com/oauth2/v1/keys
+                              uri: https://dev-601279.okta.com/oauth2/default/v1/keys
                               cluster: okta_jwks_cluster
                               timeout: 5s
                       rules:
@@ -136,7 +136,7 @@ static_resources:
             validation_context:
               trusted_ca:
                 filename: /etc/ssl/certs/ca-certificates.crt
-          sni: dev-481576.okta.com
+          sni: dev-601279.okta.com
       load_assignment:
         cluster_name: okta_jwks_cluster
         endpoints:
@@ -144,7 +144,7 @@ static_resources:
               - endpoint:
                   address:
                     socket_address:
-                      address: dev-481576.okta.com
+                      address: dev-601279.okta.com
                       port_value: 443
 
     - name: oauth2-proxy

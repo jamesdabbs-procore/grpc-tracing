@@ -38,7 +38,7 @@ static_resources:
                             prefix: "/"
                             # grpc: {}
                           route:
-                            cluster: service
+                            cluster: nginx
                 http_filters:
                   - name: envoy.filters.http.ext_authz
                     typed_config:
@@ -98,6 +98,19 @@ static_resources:
                     socket_address:
                       address: go-server
                       port_value: 5555
+    - name: nginx
+      connect_timeout: 5s
+      type: strict_dns
+      lb_policy: round_robin
+      load_assignment:
+        cluster_name: nginx
+        endpoints:
+          - lb_endpoints:
+              - endpoint:
+                  address:
+                    socket_address:
+                      address: nginx
+                      port_value: 80
     - name: jaeger
       connect_timeout: 1s
       type: strict_dns

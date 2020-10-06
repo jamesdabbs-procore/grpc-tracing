@@ -57,6 +57,11 @@ services:
     ports:
       - 16686:16686
 
+  nginx:
+    image: nginx
+    ports:
+      - 8002:80
+
   oauth2-proxy:
     image: quay.io/oauth2-proxy/oauth2-proxy:v6.1.1
     environment:
@@ -83,6 +88,6 @@ services:
         "--upstream=static://200",
         "--skip-provider-button=true",
         "--whitelist-domain=lvh.me",
-        # "--set-authorization-header=true",
+        "--set-authorization-header=true",
         "--auth-logging=true",
       ]

@@ -18,6 +18,15 @@ services:
     volumes:
       - ./ruby:/code
 
+  ruby-introspect:
+    build:
+      context: ruby-introspect
+      dockerfile: Dockerfile
+    expose:
+      - 8003
+    volumes:
+      - ./ruby-introspect:/code
+
   server-proxy:
     image: envoyproxy/envoy:v1.14.4
     volumes:
